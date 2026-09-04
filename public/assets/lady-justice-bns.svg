@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 900" role="img" aria-label="Lady Justice holding scales with Bharatiya Nyaya Sanhita 2023 plaques">
+<defs>
+ <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#0b0e13"/><stop offset="1" stop-color="#17120d"/></linearGradient>
+ <linearGradient id="metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#8d6232"/><stop offset=".45" stop-color="#f0d09a"/><stop offset=".7" stop-color="#7c562b"/><stop offset="1" stop-color="#e0b66f"/></linearGradient>
+ <linearGradient id="robe" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#4f3a25"/><stop offset=".45" stop-color="#c59a5a"/><stop offset="1" stop-color="#3a2a1d"/></linearGradient>
+ <filter id="glow"><feGaussianBlur stdDeviation="12" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+ <filter id="shadow"><feDropShadow dx="0" dy="20" stdDeviation="18" flood-opacity=".45"/></filter>
+</defs>
+<rect width="900" height="900" rx="50" fill="url(#bg)"/>
+<circle cx="635" cy="230" r="140" fill="#d7ab69" opacity=".07" filter="url(#glow)"/>
+<path d="M92 760 C280 700 440 685 815 742" stroke="#d3a762" stroke-opacity=".25" fill="none"/>
+<ellipse cx="590" cy="752" rx="235" ry="38" fill="#000" opacity=".5"/>
+<!-- pedestal -->
+<path d="M430 730 L710 730 L745 820 L395 820 Z" fill="#1b1b1c" stroke="#8d6a3b" stroke-width="4"/>
+<path d="M395 820 L745 820" stroke="#d6b178" stroke-width="5" opacity=".8"/>
+<!-- Lady Justice body -->
+<g filter="url(#shadow)">
+ <path d="M495 255 C475 280 455 315 450 355 L400 650 Q430 715 545 732 Q650 720 702 645 L645 355 C636 305 617 278 600 256 Z" fill="url(#robe)" stroke="#e0b66f" stroke-opacity=".75" stroke-width="4"/>
+ <!-- head -->
+ <ellipse cx="555" cy="205" rx="73" ry="95" fill="#9f7441" stroke="#f0d09a" stroke-width="4"/>
+ <path d="M495 194 Q555 145 615 194" stroke="#5c3d1c" stroke-width="18" fill="none"/>
+ <path d="M507 217 Q555 205 603 217" stroke="#1b1a1a" stroke-width="12"/>
+ <path d="M510 220 L600 220" stroke="#f0d09a" stroke-width="4" opacity=".8"/>
+ <!-- raised arm and sword -->
+ <path d="M625 350 Q704 298 710 205" stroke="#b5874c" stroke-width="30" fill="none" stroke-linecap="round"/>
+ <rect x="695" y="82" width="28" height="190" rx="14" fill="url(#metal)" transform="rotate(6 709 177)"/>
+ <path d="M686 86 L735 58" stroke="#e4c080" stroke-width="9" stroke-linecap="round"/>
+ <path d="M678 95 Q712 116 744 97" stroke="#c7934e" stroke-width="8" fill="none"/>
+ <!-- left arm holding scales -->
+ <path d="M490 345 Q396 320 340 250" stroke="#a7773f" stroke-width="27" fill="none" stroke-linecap="round"/>
+ <!-- scales -->
+ <path d="M330 250 L330 175" stroke="#e5bf7b" stroke-width="6"/><path d="M255 175 H405" stroke="#e5bf7b" stroke-width="8"/>
+ <path d="M275 180 L225 260" stroke="#c9914f" stroke-width="4"/><path d="M385 180 L435 260" stroke="#c9914f" stroke-width="4"/>
+ <path d="M175 260 Q225 290 275 260 L255 305 Q225 322 195 305 Z" fill="#6b4a27" stroke="#deb36e" stroke-width="4"/>
+ <path d="M395 260 Q435 290 475 260 L460 305 Q435 322 410 305 Z" fill="#6b4a27" stroke="#deb36e" stroke-width="4"/>
+ <!-- plaques -->
+ <rect x="185" y="300" width="130" height="94" rx="10" fill="#17120d" stroke="#d1a466" stroke-width="5"/>
+ <rect x="385" y="300" width="145" height="94" rx="10" fill="#17120d" stroke="#d1a466" stroke-width="5"/>
+ <text x="250" y="338" text-anchor="middle" fill="#f1d29c" font-size="22" font-family="serif">भारतीय</text>
+ <text x="250" y="367" text-anchor="middle" fill="#f1d29c" font-size="22" font-family="serif">न्याय संहिता</text>
+ <text x="458" y="342" text-anchor="middle" fill="#f1d29c" font-size="32" font-family="serif">BNS</text>
+ <text x="458" y="372" text-anchor="middle" fill="#f1d29c" font-size="19" font-family="sans-serif">2023</text>
+ <path d="M316 335 L385 335" stroke="#d1a466" stroke-width="4"/>
+ <!-- lower gown folds -->
+ <path d="M455 510 Q510 555 540 700 M520 500 Q570 570 580 708 M590 500 Q615 575 620 690" stroke="#e0b66f" stroke-opacity=".35" stroke-width="5" fill="none"/>
+</g>
+<text x="72" y="84" fill="#e0b66f" font-size="14" letter-spacing="4" font-family="sans-serif">LEX FACTUM &amp; PARTNERS</text>
+<text x="72" y="112" fill="#f3eee6" font-size="12" letter-spacing="3" font-family="sans-serif">LAW • JUSTICE • INDIA</text>
+</svg>
