@@ -1,0 +1,6 @@
+<?= $this->extend('cms/layout') ?>
+<?= $this->section('content') ?>
+<section class="cms-head"><div><small>CONTENT MANAGEMENT</small><h1>Editorial control.</h1><p>Manage legal updates and practice-area content from one place.</p></div><div class="cms-actions"><a href="<?= site_url('admin/cms/updates') ?>">LEGAL UPDATES →</a><a href="<?= site_url('admin/cms/practice-areas') ?>">PRACTICE AREAS →</a></div></section>
+<section class="cards"><div class="card"><span>ALL LEGAL UPDATES</span><strong><?= esc($updatesCount) ?></strong></div><div class="card"><span>PUBLISHED</span><strong><?= esc($publishedCount) ?></strong></div><div class="card"><span>PRACTICE AREAS</span><strong><?= esc($practiceCount) ?></strong></div></section>
+<section class="cms-grid"><div class="panel"><h2>Legal Updates</h2><p>Articles, new Acts, new Bills, BNS explainers and other legal content with draft/published workflow.</p><a class="btn" href="<?= site_url('admin/cms/updates') ?>">MANAGE UPDATES</a></div><div class="panel"><h2>Practice Areas</h2><p>Manage names, descriptions, detailed content, image paths and display order used by the website.</p><a class="btn" href="<?= site_url('admin/cms/practice-areas') ?>">MANAGE PRACTICE AREAS</a></div></section>
+<?= $this->endSection() ?>
