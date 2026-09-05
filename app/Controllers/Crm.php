@@ -3,6 +3,7 @@ namespace App\Controllers;
 
 use App\Models\ClientModel;
 use App\Models\CaseModel;
+use App\Models\UserModel;
 use CodeIgniter\Controller;
 
 class Crm extends Controller
@@ -23,7 +24,11 @@ class Crm extends Controller
 
     public function clients()
     {
-        return view('admin/crm/clients/index', ['clients' => (new ClientModel())->orderBy('id', 'DESC')->findAll()]);
+        $clients = (new ClientModel())
+            ->select('clients.*, users.id AS portal_user_id, users.status AS portal_status')
+            ->join('users', 'users.client_id = clients.id AND users.role = \'user\'', 'left')
+            ->orderBy('clients.id', 'DESC')->findAll();
+        return view('admin/crm/clients/index', ['clients' => $clients]);
     }
 
     public function createClient()
@@ -33,12 +38,47 @@ class Crm extends Controller
 
     public function storeClient()
     {
-        $data = $this->clientData();
-        if (!$this->validate(['name' => 'required|max_length[160]', 'email' => 'permit_empty|valid_email|max_length[190]', 'phone' => 'permit_empty|max_length[30]'])) {
+        $rules = [
+            'name' => 'required|max_length[160]',
+            'email' => 'required|valid_email|max_length[190]',
+            'phone' => 'permit_empty|max_length[30]',
+        ];
+        if (!$this->validate($rules)) {
             return redirect()->back()->withInput()->with('error', implode(' ', $this->validator->getErrors()));
         }
-        (new ClientModel())->insert($data);
-        return redirect()->to(site_url('admin/crm/clients'))->with('message', 'Client created successfully.');
+
+        $email = strtolower(trim((string)$this->request->getPost('email')));
+        $users = new UserModel();
+        if ($users->where('email', $email)->first()) {
+            return redirect()->back()->withInput()->with('error', 'A portal account already exists for this email address. Use another email.');
+        }
+
+        $db = db_connect();
+        $db->transStart();
+        $clientModel = new ClientModel();
+        $clientId = $clientModel->insert($this->clientData(), true);
+        $password = $this->generatePortalPassword();
+        $userId = $users->insert([
+            'name' => trim((string)$this->request->getPost('name')),
+            'email' => $email,
+            'password_hash' => password_hash($password, PASSWORD_DEFAULT),
+            'role' => 'user',
+            'status' => 'active',
+            'client_id' => $clientId,
+        ], true);
+        $db->transComplete();
+
+        if (!$db->transStatus() || !$clientId || !$userId) {
+            return redirect()->back()->withInput()->with('error', 'Client and portal account could not be created.');
+        }
+
+        $mailSent = $this->sendPortalCredentials($email, (string)$this->request->getPost('name'), $password);
+        return redirect()->to(site_url('admin/crm/clients'))->with('client_credentials', [
+            'name' => trim((string)$this->request->getPost('name')),
+            'email' => $email,
+            'password' => $password,
+            'mail_sent' => $mailSent,
+        ])->with('message', 'Client and user portal account created successfully.');
     }
 
     public function editClient(int $id)
@@ -55,14 +95,29 @@ class Crm extends Controller
         if (!$this->validate(['name' => 'required|max_length[160]', 'email' => 'permit_empty|valid_email|max_length[190]', 'phone' => 'permit_empty|max_length[30]'])) {
             return redirect()->back()->withInput()->with('error', implode(' ', $this->validator->getErrors()));
         }
+        $newEmail = strtolower(trim((string)$this->request->getPost('email')));
+        $users = new UserModel();
+        $linkedUser = $users->where('client_id', $id)->first();
+        if ($linkedUser && $newEmail !== '' && $newEmail !== strtolower((string)$linkedUser['email'])) {
+            $duplicate = $users->where('email', $newEmail)->where('id !=', $linkedUser['id'])->first();
+            if ($duplicate) return redirect()->back()->withInput()->with('error', 'That email address is already used by another portal account.');
+        }
         (new ClientModel())->update($id, $this->clientData());
-        return redirect()->to(site_url('admin/crm/clients'))->with('message', 'Client updated successfully.');
+        if ($linkedUser) {
+            $users->update($linkedUser['id'], [
+                'name' => trim((string)$this->request->getPost('name')),
+                'email' => $newEmail !== '' ? $newEmail : $linkedUser['email'],
+                'status' => $this->request->getPost('status') === 'inactive' ? 'inactive' : 'active',
+            ]);
+        }
+        return redirect()->to(site_url('admin/crm/clients'))->with('message', 'Client and linked portal account updated successfully.');
     }
 
     public function deleteClient(int $id)
     {
+        (new UserModel())->where('client_id', $id)->delete();
         (new ClientModel())->delete($id);
-        return redirect()->to(site_url('admin/crm/clients'))->with('message', 'Client deleted.');
+        return redirect()->to(site_url('admin/crm/clients'))->with('message', 'Client and linked portal account deleted.');
     }
 
     public function cases()
@@ -146,5 +201,46 @@ class Crm extends Controller
             'status' => trim((string)$this->request->getPost('status')) ?: 'open',
             'description' => trim((string)$this->request->getPost('description')) ?: null,
         ];
+    }
+
+    private function generatePortalPassword(): string
+    {
+        return 'Lx@' . strtoupper(bin2hex(random_bytes(3))) . random_int(10, 99);
+    }
+
+    private function sendPortalCredentials(string $emailAddress, string $name, string $password): bool
+    {
+        $host = trim((string)env('email.SMTPHost', ''));
+        if ($host === '') return false;
+
+        $email = service('email');
+        $email->initialize([
+            'protocol' => env('email.protocol', 'smtp'),
+            'SMTPHost' => $host,
+            'SMTPUser' => env('email.SMTPUser', ''),
+            'SMTPPass' => env('email.SMTPPass', ''),
+            'SMTPPort' => (int)env('email.SMTPPort', 587),
+            'SMTPTimeout' => (int)env('email.SMTPTimeout', 10),
+            'SMTPCrypto' => env('email.SMTPCrypto', 'tls'),
+            'mailType' => 'html',
+            'charset' => 'UTF-8',
+            'wordWrap' => true,
+            'newline' => "\r\n",
+            'CRLF' => "\r\n",
+        ]);
+        $from = trim((string)env('email.fromEmail', ''));
+        $fromName = trim((string)env('email.fromName', 'Lex Factum & Partners'));
+        if ($from === '') return false;
+
+        $email->setFrom($from, $fromName);
+        $email->setTo($emailAddress);
+        $email->setSubject('Your Lex Factum Client Portal Login');
+        $email->setMessage(view('emails/client_portal_credentials', [
+            'name' => $name,
+            'email' => $emailAddress,
+            'password' => $password,
+            'loginUrl' => site_url('login'),
+        ]));
+        return (bool)$email->send(false);
     }
 }
